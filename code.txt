@@ -1,0 +1,10 @@
+void main(void)
+{
+	unsigned float abbbb;
+	int bb12;
+	short pppo55p5;
+	if(bb12 == 4)  {
+		int a;
+	} else {
+	}
+}
