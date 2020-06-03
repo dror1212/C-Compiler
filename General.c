@@ -125,8 +125,8 @@ void initMainGraph(graphPtr graph)
 
 void initifAndElseGraph(graphPtr graph)
 {
-	Status statuses[11] = { SEARCHING,SEARCHING,SEARCHING,SEARCHING,SEARCHING,SEARCHING,
-							SEARCHING,CONDITION_GRAPH,SEARCHING,SUCCES,PROBLEM_OPERAND };
+	Status statuses[12] = { SEARCHING,SEARCHING,SEARCHING,SEARCHING,SEARCHING,SEARCHING,
+							SEARCHING,CONDITION_GRAPH,SEARCHING,SUCCES,SEARCHING,PROBLEM_OPERAND };
 	// edges:
 	// i --> f
 	// f --> " "
@@ -142,14 +142,14 @@ void initifAndElseGraph(graphPtr graph)
 	// e --> {
 	// " " --> i
 	// " " --> " "
-	initMyGraph(graph, statuses, "iff f( (ellssee  i(}})e{){ {)   ","}");
+	initMyGraph(graph, statuses, "iff f( (ellssee  i(??)e{){ {)   }e}  i", "?");
 }
 
 void initConditionGraph(graphPtr graph)
 {
-	Status statuses[16] = { SEARCHING };
-	statuses[15] = PROBLEM_OPERAND;
-	statuses[14] = CONDITION_GRAPH;
+	Status statuses[17] = { SEARCHING };
+	statuses[16] = PROBLEM_OPERAND;
+	statuses[15] = CONDITION_GRAPH;
 	statuses[0] = CHECK_VARIABLES_GRAPH;
 	statuses[1] = SUCCES;
 	statuses[2] = NUMBERS_GRAPH;
@@ -349,7 +349,7 @@ void initNumbersHash(HashTable hashArray)
 void initStartsIfAndElse(HashTable hashArray)
 {
 	insertHash(hashArray, 'i', 0, hashCode);
-	insertHash(hashArray, 'e', 4, hashCode);
+	insertHash(hashArray, '}', 10, hashCode);
 }
 
 void initNewVarNameHashTable(HashTable hashArray)
@@ -364,6 +364,10 @@ void initNewVarNameHashTable(HashTable hashArray)
 
 Status variableGraphFunction(graphPtr gra, int *vertexIndex, FILE* source, HashTable graphsToUse, HashTable variables, Status status, char * newVar, char c)
 {
+	while (c == '\n' || c == ' ' || c == '	')
+	{
+		c = getc(source);
+	}
 	int index = getOffsetByVertexName(gra, VARIABLES_GRAPH, cmpStatus);
 	if (*vertexIndex != -1 && index != -1 && gra->adjacentMat[*vertexIndex][index])
 	{
@@ -383,14 +387,14 @@ Status variableGraphFunction(graphPtr gra, int *vertexIndex, FILE* source, HashT
 
 Status numbersGraphFunction(graphPtr gra, int* vertexIndex, FILE* source, HashTable graphsToUse, HashTable variables, Status status, char* newVar, char c)
 {
+	while (c == '\n' || c == ' ' || c == '	')
+	{
+		c = getc(source);
+	}
 	int index = getOffsetByVertexName(gra, NUMBERS_GRAPH, cmpStatus);
 	if (*vertexIndex != -1 && index != -1 && gra->adjacentMat[*vertexIndex][index])
 	{
 		*vertexIndex = index;
-		while(c == ' ' || c == '	' || c == '\n')
-		{
-			c = getc(source);
-		}
 		map* data = (map*)searchHash(graphsToUse, NUMBERS_GRAPH, hashCode)->data;
 		if (searchHash(data->hashArray, c, hashCode))
 		{
@@ -410,6 +414,10 @@ Status checkVariablesGraphFunction(graphPtr gra, int *vertexIndex, FILE* source,
 {
 	fseek(source, -2L, SEEK_CUR);
 	c = getc(source);
+	while (c == '\n' || c == ' ' || c == '	')
+	{
+		c = getc(source);
+	}
 	int index = getOffsetByVertexName(gra, CHECK_VARIABLES_GRAPH, cmpStatus);
 	if (*vertexIndex != -1 && index != -1 && gra->adjacentMat[*vertexIndex][index])
 	{
@@ -440,6 +448,10 @@ Status checkVariablesGraphFunction(graphPtr gra, int *vertexIndex, FILE* source,
 
 Status conditionGraphFunction(graphPtr gra, int * vertexIndex, FILE* source, HashTable graphsToUse, HashTable variables, Status status, char* newVar, char c)
 {
+	while (c == '\n' || c == ' ' || c == '	')
+	{
+		c = getc(source);
+	}
 	int index = getOffsetByVertexName(gra, CONDITION_GRAPH, cmpStatus);
 	if (*vertexIndex != -1 && index != -1 && gra->adjacentMat[*vertexIndex][index])
 	{

@@ -62,11 +62,11 @@ void main()
 	initGraphsToUse(graphsToUse, &numbersGraph, numbersStarts, NUMBERS_GRAPH);
 	initGraphsToUse(graphsToUse, &conditionGraph, conditionStarts, CONDITION_GRAPH);
 
-	identationHelp[1] = 1;
-	graphArray[0] = createVarsGraph;
-	hashArray[0] = creatingVarsStarts;
-	graphArray[1] = ifAndElseGraph;
-	hashArray[1] = ifAndElseStarts;
+	identationHelp[0] = 1;
+	graphArray[1] = createVarsGraph;
+	hashArray[1] = creatingVarsStarts;
+	graphArray[0] = ifAndElseGraph;
+	hashArray[0] = ifAndElseStarts;
 
 	status = explore(&mainGraph, getOffsetByVertexName(&mainGraph, getc(file), cmpCharVrx),
 					file, 15, graphsToUse,vars);
@@ -77,42 +77,41 @@ void main()
 		{
 			c = getc(file);
 		}
-		if (c == '}')
+		Status statusTemp = SEARCHING;
+		for (graphsCounter = 0; graphsCounter < length && statusTemp != SUCCES; graphsCounter++)
 		{
-			identation--;
-		}
-		else
-		{
-			Status statusTemp = SEARCHING;
-			for (graphsCounter = 0; graphsCounter < length && statusTemp != SUCCES; graphsCounter++)
+			DataItemPtr data = searchHash(hashArray[graphsCounter], c, hashCode);
+			if (data)
 			{
-				DataItemPtr data = searchHash(hashArray[graphsCounter], c, hashCode);
-				if (data)
-				{
-					place = ftell(file);
-					statusTemp = status = explore(&graphArray[graphsCounter], data->data, file, -1, graphsToUse,vars);
-					status == SUCCES ? NULL : fseek(file, place, SEEK_SET);
-					identation += status == SUCCES ? identationHelp[graphsCounter] : 0;
-				}
-				else
-				{
-					statusTemp = status = SYNTAX_ERROR;
-				}
+				place = ftell(file);
+				statusTemp = status = explore(&graphArray[graphsCounter], data->data, file, -1, graphsToUse, vars);
+				status == SUCCES ? NULL : fseek(file, place, SEEK_SET);
+				identation += status == SUCCES ? identationHelp[graphsCounter] : 0;
+			}
+			else
+			{
+				status = SYNTAX_ERROR;
 			}
 		}
+		identation -= (c / '}' == 1) && (c % '}' == 0);
+		status = (c / '}' == 1) && (c % '}' == 0) ? SUCCES : status;
 	}
 
-	if ((status == SUCCES && identation >= 0))
-	{
-		status = IDENTATION_ERROR;
-	}
+	c = getc(file);
 
+	//stripString(file, &c);
+
+	status = ((status == SUCCES) && (identation != -1)) ? IDENTATION_ERROR : status;
+	//status = ((status == SUCCES) && ((getc(file)) != EOF)) ? CODE_AFTER_MAIN : status;
 	errorCode = status;
+
 	fclose(file);
-	printf("%s", (char *)searchHash(errorsHashArray, errorCode,hashCode)->data);
+	printf("%s", (char*)searchHash(errorsHashArray, errorCode, hashCode)->data);
 
 	freeGraph(&mainGraph);
 	freeGraph(&ifAndElseGraph);
 	freeGraph(&createVarsGraph);
 	freeGraph(&variablesNamesGraph);
+	freeGraph(&numbersGraph);
+	freeGraph(&conditionGraph);
 }
