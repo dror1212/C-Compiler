@@ -1,9 +1,8 @@
 void main(void)
 {
-	unsigned float abbbb;
-	int bb12;
-	short pppo55p5;
-	if(bb12 == 55 == 33)  {
-		int a;
-	}else if(bb12 == 55){}
+	int aaa;
+	unsigned short bb2a;
+	if(aaa == 55) {
+	} else {}
+	aaa = 55;
 }

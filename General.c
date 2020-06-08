@@ -34,47 +34,68 @@ int stringHashCode(char* str)
 	return hash % HASH_TABLE_SIZE;
 }
 
-void initMyGraph(graphPtr graph, Status * statuses, char * vertexes, char * graphs)
+void initMyGraph(graphPtr graph, int* statuses, char* vertexes, char* graphs, Status err)
 {
 	vertexPtr vert;
 	int firstOffset;
 	int secondOffset;
 	int counter = 0;
+	int arr[260];
+
+	for (int i = 0; i < 260; i++)
+	{
+		vert = (vertexPtr)malloc(sizeof(vertex));
+		vert->value = i;
+		vert->status = err;
+		addVertexToGraph(graph, vert);
+		arr[i] = i;
+	}
+
 	while (*vertexes != '\0')
 	{
-		firstOffset = getOffsetByVertexName(graph, *vertexes, cmpCharVrx);
-		if(firstOffset == -1)
+		firstOffset = arr[*vertexes];
+		if (graph->verticesArr[firstOffset]->status == err)
 		{
-			vert = (vertexPtr)malloc(sizeof(vertex));
-			vert->value = *vertexes;
-			vert->status = statuses[counter];
-			addVertexToGraph(graph, vert);
-			firstOffset = getOffsetByVertexName(graph, *vertexes, cmpCharVrx);
+			if (statuses[counter] >= VARIABLES_GRAPH && statuses[counter] <= CONDITION_GRAPH)
+			{
+				graph->verticesArr[256 + statuses[counter] - VARIABLES_GRAPH]->status = statuses[counter];
+				graph->verticesArr[256 + statuses[counter] - VARIABLES_GRAPH]->value = statuses[counter];
+				firstOffset = 256 + statuses[counter] - VARIABLES_GRAPH;
+				arr[*vertexes] = 256 + statuses[counter] - VARIABLES_GRAPH;
+			}
+			else
+			{
+				graph->verticesArr[firstOffset]->status = statuses[counter];
+			}
 			counter++;
 		}
-		if (firstOffset == -1)
-		{
-			printf(*vertexes);
-		}
 		vertexes++;
-		secondOffset = getOffsetByVertexName(graph, *vertexes, cmpCharVrx);
-		if (secondOffset == -1)
+		secondOffset = arr[*vertexes];
+		if (graph->verticesArr[secondOffset]->status == err)
 		{
-			vert = (vertexPtr)malloc(sizeof(vertex));
-			vert->value = *vertexes;
-			vert->status = statuses[counter];
-			addVertexToGraph(graph, vert);
-			secondOffset = getOffsetByVertexName(graph, *vertexes, cmpCharVrx);
+			if (statuses[counter] >= VARIABLES_GRAPH && statuses[counter] <= CONDITION_GRAPH)
+			{
+				graph->verticesArr[256 + statuses[counter] - VARIABLES_GRAPH]->status = statuses[counter];
+				graph->verticesArr[256 + statuses[counter] - VARIABLES_GRAPH]->value = statuses[counter];
+				secondOffset = 256 + statuses[counter] - VARIABLES_GRAPH;
+				arr[*vertexes] = 256 + statuses[counter] - VARIABLES_GRAPH;
+			}
+			else
+			{
+				graph->verticesArr[secondOffset]->status = statuses[counter];
+			}
 			counter++;
 		}
 		vertexes++;
 
 		graph->adjacentMat[firstOffset][secondOffset] = TRUE;
 	}
+
 	vert = (vertexPtr)malloc(sizeof(vertex));
 	vert->value = NULL;
-	vert->status = statuses[counter];
+	vert->status = err;
 	addVertexToGraph(graph, vert);
+
 
 	/*
 	// will be removed
@@ -120,7 +141,7 @@ void initMainGraph(graphPtr graph)
 	// ( --> v
 	// d --> )
 	// ) --> {
-	initMyGraph(graph, statuses, "vooiidd    mmaaiinn(n  ((vd)){","");
+	initMyGraph(graph, statuses, "vooiidd    mmaaiinn(n  ((vd)){","", FIND_MAIN);
 }
 
 void initifAndElseGraph(graphPtr graph)
@@ -142,7 +163,7 @@ void initifAndElseGraph(graphPtr graph)
 	// e --> {
 	// " " --> i
 	// " " --> " "
-	initMyGraph(graph, statuses, "iff f( (ellssee  i(??)e{){ {)   }e}  i", "?");
+	initMyGraph(graph, statuses, "iff f( (ellssee  i(!!)e{){ {)   }e}  i e", "!", PROBLEM_OPERAND);
 }
 
 void initConditionGraph(graphPtr graph)
@@ -214,12 +235,12 @@ void initConditionGraph(graphPtr graph)
 	// numbers --> =
 	// numbers --> |
 	// numbers --> &
-	initMyGraph(graph, statuses, "{)}){ }    ) + - * / % < > = | &<=>===&&||+{-{*{/{%{={|{&{+}-}*}/}%}=}|}&}(?{){+{-{*{/{%{<{>{={|{&})}+}-}*}/}%}<}>}=}|}&", "{}?");
+	initMyGraph(graph, statuses, "{)}){ }    ) + - * / % < > = | &<=>===&&||+{-{*{/{%{={|{&{+}-}*}/}%}=}|}&}(?{){+{-{*{/{%{<{>{={|{&})}+}-}*}/}%}<}>}=}|}&", "{}?", PROBLEM_OPERAND);
 }
 
 void initNewVarNameGraph(graphPtr graph)
 {
-	Status statuses[37] = { SUCCES };
+	Status statuses[37] = { SEARCHING };
 	statuses[36] = WRONG_PARAMETER_NAME;
 	// a --> a
 	// a --> b
@@ -261,7 +282,7 @@ void initNewVarNameGraph(graphPtr graph)
 		}
 	}
 	vertexes[counter] = '\0';
-	initMyGraph(graph, statuses, vertexes,"");
+	initMyGraph(graph, statuses, vertexes,"", WRONG_PARAMETER_NAME);
 }
 
 void initNumbersGraph(graphPtr graph)
@@ -282,19 +303,25 @@ void initNumbersGraph(graphPtr graph)
 		}
 	}
 	vertexes[counter] = '\0';
-	initMyGraph(graph, statuses, vertexes, "");
+	initMyGraph(graph, statuses, vertexes, "", NOT_PART_OF_NUMBER);
+}
+
+void initEqualsGraph(graphPtr graph)
+{
+	Status statuses[6] = { SEARCHING,CHECK_VARIABLES_GRAPH,SEARCHING, SUCCES,NUMBERS_GRAPH, SYNTAX_ERROR};
+	// edges:
+
+	initMyGraph(graph, statuses, "   }}==}}; == =? ?? ?;} =}", "}?", PROBLEM_IN_PLACEMENT);
 }
 
 
 void initCreateVariablesGraph(graphPtr graph)
 {
-	Status statuses[20] = { SEARCHING };
-	statuses[19] = WRONG_PARAMETER_NAME;
-	statuses[18] = CONDITION_GRAPH;
+	Status statuses[18] = { SEARCHING };
+	statuses[17] = WRONG_PARAMETER_NAME;
 	statuses[16] = SUCCES;
 	statuses[15] = VARIABLES_GRAPH;
-
-	initMyGraph(graph, statuses, "unnssiiggnneedd    iinnt ffllooaatt  sshhoorrt }};}=={{;","{}");
+	initMyGraph(graph, statuses, "unnssiiggnneedd    iinnt ffllooaatt  sshhoorrt }};", "}", WRONG_PARAMETER_NAME);
 }
 
 void initErrorsHashTable(HashTable hashArray)
@@ -305,6 +332,8 @@ void initErrorsHashTable(HashTable hashArray)
 	insertHash(hashArray, SYNTAX_ERROR, "There was an error", hashCode);
 	insertHash(hashArray, PROBLEM_OPERAND, "You had a problem in the condition", hashCode);
 	insertHash(hashArray, WRONG_PARAMETER_NAME, "Could not create the variable", hashCode);
+	insertHash(hashArray, CODE_AFTER_MAIN, "There is unreadable code outside the main", hashCode);
+	insertHash(hashArray, PROBLEM_IN_PLACEMENT, "There was an error while trying to place a new value to var", hashCode);
 }
 
 void initGraphsToUse(HashTable hashArray, graphPtr newGraph,HashTable newTable, int graphName)
@@ -326,9 +355,6 @@ void initStartsCreatingVars(HashTable hashArray)
 void initStartsCondition(HashTable hashArray)
 {
 	insertHash(hashArray, '(', 3, hashCode);
-	insertHash(hashArray, 's', 2, hashCode);
-	insertHash(hashArray, 'f', 9, hashCode);
-	insertHash(hashArray, 'u', 0, hashCode);
 }
 
 
@@ -362,20 +388,25 @@ void initNewVarNameHashTable(HashTable hashArray)
 	}
 }
 
-Status variableGraphFunction(graphPtr gra, int *vertexIndex, FILE* source, HashTable graphsToUse, HashTable variables, Status status, char * newVar, char c)
+Status variableGraphFunction(graphPtr gra, int *vertexIndex, FILE* source, HashTable graphsToUse, HashTable variables, Status status, char * newVar, char c, int * line)
 {
-	while (c == '\n' || c == ' ' || c == '	')
-	{
-		c = getc(source);
-	}
-	int index = getOffsetByVertexName(gra, VARIABLES_GRAPH, cmpStatus);
-	if (*vertexIndex != -1 && index != -1 && gra->adjacentMat[*vertexIndex][index])
+	strip(source, &c, line);
+
+	int index = 256 + VARIABLES_GRAPH - VARIABLES_GRAPH;
+	if (gra->adjacentMat[*vertexIndex][index])
 	{
 		*vertexIndex = index;
 		map* data = (map*)searchHash(graphsToUse, VARIABLES_GRAPH, hashCode)->data;
-		index = getOffsetByVertexName(data->graph, searchHash(data->hashArray, c, hashCode)->data, cmpCharVrx);
-		status = exploreAndCreateVars(data->graph, index, source, newVar);
-		insertHash(variables, newVar, newVar, stringHashCode);
+		if (data && searchHash(data->hashArray, c, hashCode))
+		{
+			status = exploreAndCreateVars(data->graph, c, source, newVar);
+			insertHash(variables, newVar, newVar, stringHashCode);
+		}
+		else
+		{
+			status = gra->verticesArr[gra->size - 1]->status;
+		}
+		
 	}
 	else
 	{
@@ -385,20 +416,17 @@ Status variableGraphFunction(graphPtr gra, int *vertexIndex, FILE* source, HashT
 	return status;
 }
 
-Status numbersGraphFunction(graphPtr gra, int* vertexIndex, FILE* source, HashTable graphsToUse, HashTable variables, Status status, char* newVar, char c)
+Status numbersGraphFunction(graphPtr gra, int* vertexIndex, FILE* source, HashTable graphsToUse, HashTable variables, Status status, char* newVar, char c, int * line)
 {
-	while (c == '\n' || c == ' ' || c == '	')
-	{
-		c = getc(source);
-	}
-	int index = getOffsetByVertexName(gra, NUMBERS_GRAPH, cmpStatus);
-	if (*vertexIndex != -1 && index != -1 && gra->adjacentMat[*vertexIndex][index])
+	strip(source, &c,line);
+
+	int index = 256 + NUMBERS_GRAPH - VARIABLES_GRAPH;
+	if (index != -1 && gra->adjacentMat[*vertexIndex][index])
 	{
 		*vertexIndex = index;
 		map* data = (map*)searchHash(graphsToUse, NUMBERS_GRAPH, hashCode)->data;
 		if (searchHash(data->hashArray, c, hashCode))
 		{
-			index = getOffsetByVertexName(data->graph, searchHash(data->hashArray, c, hashCode)->data, cmpCharVrx);
 			status = exploreAndCreateVars(data->graph, index, source, newVar);
 		}
 	}
@@ -410,27 +438,36 @@ Status numbersGraphFunction(graphPtr gra, int* vertexIndex, FILE* source, HashTa
 	return status;
 }
 
-Status checkVariablesGraphFunction(graphPtr gra, int *vertexIndex, FILE* source, HashTable graphsToUse, HashTable variables, Status status, char* newVar, char c)
+Status checkVariablesGraphFunction(graphPtr gra, int *vertexIndex, FILE* source, HashTable graphsToUse, HashTable variables, Status status, char* newVar, char c, int * line)
 {
-	fseek(source, -2L, SEEK_CUR);
-	c = getc(source);
-	while (c == '\n' || c == ' ' || c == '	')
+	strip(source, &c, line);
+	if (c >= 'a' && c <= 'z')
 	{
+		fseek(source, -2L, SEEK_CUR);
 		c = getc(source);
-	}
-	int index = getOffsetByVertexName(gra, CHECK_VARIABLES_GRAPH, cmpStatus);
-	if (*vertexIndex != -1 && index != -1 && gra->adjacentMat[*vertexIndex][index])
-	{
-		*vertexIndex = index;
-		map* data = (map*)searchHash(graphsToUse, VARIABLES_GRAPH, hashCode)->data;
-		DataItemPtr p = searchHash(data->hashArray, c, hashCode);
-		if (p)
+		while (c == '\n' || c == ' ' || c == '	' || (c > 'z' || c < 'a'))
 		{
-			index = getOffsetByVertexName(data->graph, searchHash(data->hashArray, c, hashCode)->data, cmpCharVrx);
-			status = exploreAndCreateVars(data->graph, index, source, newVar);
-			if (!searchHash(variables, newVar, stringHashCode))
+			*line += c == '\n';
+			c = getc(source);
+		}
+		int index = getOffsetByVertexName(gra, CHECK_VARIABLES_GRAPH, cmpStatus);
+		if (*vertexIndex != -1 && index != -1)
+		{
+			*vertexIndex = index;
+			map* data = (map*)searchHash(graphsToUse, VARIABLES_GRAPH, hashCode)->data;
+			DataItemPtr p = searchHash(data->hashArray, c, hashCode);
+			if (p)
 			{
-				status = WRONG_PARAMETER_NAME;
+				index = getOffsetByVertexName(data->graph, searchHash(data->hashArray, c, hashCode)->data, cmpCharVrx);
+				status = exploreAndCreateVars(data->graph, index, source, newVar);
+				if (!searchHash(variables, newVar, stringHashCode))
+				{
+					status = WRONG_PARAMETER_NAME;
+				}
+			}
+			else
+			{
+				status = gra->verticesArr[gra->size - 1]->status;
 			}
 		}
 		else
@@ -442,75 +479,56 @@ Status checkVariablesGraphFunction(graphPtr gra, int *vertexIndex, FILE* source,
 	{
 		status = gra->verticesArr[gra->size - 1]->status;
 	}
-
 	return status;
 }
 
-Status conditionGraphFunction(graphPtr gra, int * vertexIndex, FILE* source, HashTable graphsToUse, HashTable variables, Status status, char* newVar, char c)
+Status conditionGraphFunction(graphPtr gra, int * vertexIndex, FILE* source, HashTable graphsToUse, HashTable variables, Status status, char* newVar, char c, int * line)
 {
-	while (c == '\n' || c == ' ' || c == '	')
-	{
-		c = getc(source);
-	}
-	int index = getOffsetByVertexName(gra, CONDITION_GRAPH, cmpStatus);
-	if (*vertexIndex != -1 && index != -1 && gra->adjacentMat[*vertexIndex][index])
+	strip(source, &c, line);
+	int index = 256 + CONDITION_GRAPH - VARIABLES_GRAPH;
+	if (gra->adjacentMat[*vertexIndex][index])
 	{
 		*vertexIndex = index;
 		map* data = (map*)searchHash(graphsToUse, CONDITION_GRAPH, hashCode)->data;
-		if (searchHash(data->hashArray, c, hashCode))
-		{
-			index = getOffsetByVertexName(data->graph, searchHash(data->hashArray, c, hashCode)->data, cmpCharVrx);
-		}
-		if (index == -1)
-		{
-			index = getOffsetByVertexName(data->graph, CONDITION_GRAPH, cmpStatus);
-		}
-		if (index == -1)
-		{
-			index = getOffsetByVertexName(data->graph, CHECK_VARIABLES_GRAPH, cmpStatus);
-		}
-		status = explore(data->graph, index, source, -1, graphsToUse, variables);
+		status = explore(data->graph, index, source, -1, graphsToUse, variables, line);
 		fseek(source, -1L, SEEK_CUR);
 	}
 	else
 	{
-		status = gra->verticesArr[gra->size - 1]->status;
+		status = gra->verticesArr[c]->status;
 	}
+
+	return status;
 }
 
 
-Status explore(graphPtr gra, int vertexIndex, FILE* source, int expectedLength, HashTable graphsToUse, HashTable variables)
+Status explore(graphPtr gra, int vertexIndex, FILE* source, int expectedLength, HashTable graphsToUse, HashTable variables, int * line)
 {
 	Status status = SEARCHING;
 	int length = 1;
 	char c;
 	STRING newVar = "";
-	Status(*functions[NUMBERS_GRAPH - VARIABLES_GRAPH + 1])();
+	Status(*functions[CONDITION_GRAPH - VARIABLES_GRAPH + 1])();
 	functions[VARIABLES_GRAPH - VARIABLES_GRAPH] = variableGraphFunction;
 	functions[CHECK_VARIABLES_GRAPH - VARIABLES_GRAPH] = checkVariablesGraphFunction;
 	functions[CONDITION_GRAPH - VARIABLES_GRAPH] = conditionGraphFunction;
 	functions[NUMBERS_GRAPH - VARIABLES_GRAPH] = numbersGraphFunction;
-
 	while (status == SEARCHING && (c = getc(source)) != EOF)
 	{
-		while (c == '\n' || c == '	')
+		partStrip(source, &c, line);
+		if (gra->adjacentMat[vertexIndex][c])
 		{
-			c = getc(source);
+			vertexIndex = c;
+			status = gra->verticesArr[c]->status;
 		}
-		int index = getOffsetByVertexName(gra, c, cmpCharVrx);
-		if (vertexIndex != -1 && index != -1 && gra->adjacentMat[vertexIndex][index])
-		{
-			vertexIndex = index;
-			status = gra->verticesArr[index]->status;
-		}
-		else 
+		else
 		{
 			Status temp = PROBLEM_OPERAND;
-			for (int i = VARIABLES_GRAPH; i <= NUMBERS_GRAPH && temp != SEARCHING && temp != SUCCES; i++)
+			for (int i = VARIABLES_GRAPH; i <= CONDITION_GRAPH && temp != SEARCHING && temp != SUCCES; i++)
 			{
 				int vert = vertexIndex;
 				long place = ftell(source);
-				temp = functions[i - VARIABLES_GRAPH](gra, &vertexIndex, source, graphsToUse, variables, status, newVar, c);
+				temp = functions[i - VARIABLES_GRAPH](gra, &vertexIndex, source, graphsToUse, variables, status, newVar, c, line);
 				status = temp == SUCCES ? SEARCHING : temp;
 				status == SEARCHING || status == SUCCES ? NULL : fseek(source, place, SEEK_SET);
 				vertexIndex = status == SEARCHING || status == SUCCES ? vertexIndex : vert;
@@ -535,19 +553,59 @@ Status exploreAndCreateVars(graphPtr gra, int vertexIndex, FILE* source, char * 
 	newVar[counter++] = (char)gra->verticesArr[vertexIndex]->value;
 	while (status == SEARCHING && (c = getc(source)) != EOF)
 	{
-		int index = getOffsetByVertexName(gra, c, cmpCharVrx);
-		if (vertexIndex != -1 && index != -1 && gra->adjacentMat[vertexIndex][index])
-		{
-			vertexIndex = index;
-			status = gra->verticesArr[index]->status;
-			newVar[counter++] = c;
-		}
-		else
-		{
-			status = gra->verticesArr[gra->size - 1]->status;
-		}
+		vertexIndex = c;
+		status = gra->verticesArr[c]->status;
+		newVar[counter++] = c;
 	}
-
+	newVar[--counter] = '\0';
 	fseek(source, -1L, SEEK_CUR);
 	return SEARCHING;
+}
+
+void strip(FILE* file, char* c, int * line)
+{
+	while (*c == '\n' || *c == ' ' || *c == '	')
+	{
+		*line += *c == '\n';
+		*c = getc(file);
+	}
+}
+
+void partStrip(FILE* file, char* c, int * line)
+{
+	while (*c == '\n' || *c == '	')
+	{
+		*line += *c == '\n';
+		*c = getc(file);
+	}
+}
+
+void findNextPartOfCode(FILE* file, char* c, int* line, int * identation)
+{
+	while (*c != ';')
+	{
+		*line += *c == '\n';
+		*identation -= *c == '}';
+		*identation += *c == '{';
+		if ((*c = getc(file)) == EOF)
+		{
+			break;
+		}
+	}
+}
+
+void showAllErrors(LLLPtr list, HashTable errorsHashArray)
+{
+	if (list != NULL)
+	{
+		if (list->next != NULL)
+		{
+			showAllErrors(list->next, errorsHashArray);
+		}
+		printf("\n%s on line %d.", (char*)searchHash(errorsHashArray, ((errorPtr)(list->info))->status, hashCode)->data, ((errorPtr)(list->info))->line);
+	}
+	else
+	{
+		printf("\n%s", (char*)searchHash(errorsHashArray, SUCCES, hashCode)->data);
+	}
 }

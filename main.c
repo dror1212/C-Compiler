@@ -9,6 +9,7 @@ void main()
 	graph variablesNamesGraph;
 	graph numbersGraph;
 	graph conditionGraph;
+	graph equalsGraph;
 	HashTable errorsHashArray;
 	HashTable newVariables;
 	HashTable graphsToUse;
@@ -24,9 +25,14 @@ void main()
 	int errorCode;
 	int graphsCounter;
 	long place;
+	int lines = 0;
 	graph graphArray[2];
 	DataItemPtr * hashArray[2];
 	Status status;
+	LLLPtr first = malloc(sizeof(LLL));
+	first->info = SEARCHING;
+	LLLPtr* errorsList = &first;
+	initLLL(errorsList);
 
 	initGraph(&mainGraph);
 	initGraph(&createVarsGraph);
@@ -34,6 +40,7 @@ void main()
 	initGraph(&variablesNamesGraph);
 	initGraph(&numbersGraph);
 	initGraph(&conditionGraph);
+	initGraph(&equalsGraph);
 
 	initHash(creatingVarsStarts);
 	initHash(ifAndElseStarts);
@@ -50,6 +57,7 @@ void main()
 	initNewVarNameGraph(&variablesNamesGraph);
 	initNumbersGraph(&numbersGraph);
 	initConditionGraph(&conditionGraph);
+	initEqualsGraph(&equalsGraph);
 
 	initStartsIfAndElse(ifAndElseStarts);
 	initStartsCreatingVars(creatingVarsStarts);
@@ -68,45 +76,118 @@ void main()
 	graphArray[0] = ifAndElseGraph;
 	hashArray[0] = ifAndElseStarts;
 
-	status = explore(&mainGraph, getOffsetByVertexName(&mainGraph, getc(file), cmpCharVrx),
-					file, 15, graphsToUse,vars);
-
-	while (status == SUCCES && identation >= 0 && (c = getc(file)) != EOF)
+	status = explore(&mainGraph, getc(file),
+					file, 15, graphsToUse,vars,&lines);
+	if (status != SUCCES)
 	{
-		while (c == '\n' || c == ' ' || c == '	')
-		{
-			c = getc(file);
-		}
+		insertAfter(first);
+		errorPtr errPtr = malloc(sizeof(error));
+		errPtr->line = lines;
+		errPtr->status = status;
+		first->next->info = errPtr;
+		findNextPartOfCode(file, &c, &lines, &identation);
+		status = SUCCES;
+	}
+	Status err = SYNTAX_ERROR;
+
+	while (identation >= 0 && (c = getc(file)) != EOF)
+	{
+		strip(file, &c,&lines);
 		Status statusTemp = SEARCHING;
+		int max = 0;
+		err = SYNTAX_ERROR;
 		for (graphsCounter = 0; graphsCounter < length && statusTemp != SUCCES; graphsCounter++)
 		{
 			DataItemPtr data = searchHash(hashArray[graphsCounter], c, hashCode);
 			if (data)
 			{
 				place = ftell(file);
-				statusTemp = status = explore(&graphArray[graphsCounter], data->data, file, -1, graphsToUse, vars);
+				statusTemp = status = explore(&graphArray[graphsCounter], data->key, file, -1, graphsToUse, vars, &lines);
+				if (ftell(file) - place > max && status > SUCCES)
+				{
+					max = ftell(file) - place;
+					err = status;
+				}
 				status == SUCCES ? NULL : fseek(file, place, SEEK_SET);
 				identation += status == SUCCES ? identationHelp[graphsCounter] : 0;
 			}
 			else
 			{
-				status = SYNTAX_ERROR;
+				status = err;
 			}
 		}
 		identation -= (c / '}' == 1) && (c % '}' == 0);
-		status = (c / '}' == 1) && (c % '}' == 0) ? SUCCES : status;
+		if (status > SUCCES)
+		{
+			place = ftell(file);
+			c == '}' ? c = getc(file) : fseek(file, -1L, SEEK_CUR);
+			place = ftell(file);
+			//fseek(file, -1L, SEEK_CUR);
+			status = explore(&equalsGraph, 0, file, -1, graphsToUse, vars, &lines);
+			if (ftell(file) - place > max && statusTemp != SUCCES)
+			{
+				max = ftell(file) - place;
+				err = status;
+			}
+			status == SUCCES ? NULL : fseek(file, place, SEEK_SET);
+		}
+		if (status > SUCCES && max > 0 && identation != -1)
+		{
+			insertAfter(first);
+			errorPtr errPtr = malloc(sizeof(error));
+			errPtr->line = lines;
+			errPtr->status = err;
+			first->next->info = errPtr;
+			findNextPartOfCode(file, &c, &lines, &identation);
+			status = SUCCES;
+		}
+		status = SUCCES;
+	}
+	//identation -= (c / '}' == 1) && (c % '}' == 0);
+	status = err = ((status == SUCCES) && (identation != -1)) ? IDENTATION_ERROR : SUCCES;
+	if (status != SUCCES)
+	{
+		insertAfter(first);
+		errorPtr errPtr = malloc(sizeof(error));
+		errPtr->line = lines;
+		errPtr->status = err;
+		first->next->info = errPtr;
+		findNextPartOfCode(file, &c, &lines, &identation);
+		status = SUCCES;
+	}
+	status = err = ((status == SUCCES) && ((getc(file)) != EOF)) ? CODE_AFTER_MAIN : SUCCES;
+	if (status != SUCCES)
+	{
+		insertAfter(first);
+		errorPtr errPtr = malloc(sizeof(error));
+		errPtr->line = lines;
+		errPtr->status = err;
+		first->next->info = errPtr;
+		findNextPartOfCode(file, &c, &lines, &identation);
+		status = SUCCES;
 	}
 
 	c = getc(file);
 
-	//stripString(file, &c);
+	strip(file, &c, &lines);
 
-	status = ((status == SUCCES) && (identation != -1)) ? IDENTATION_ERROR : status;
-	//status = ((status == SUCCES) && ((getc(file)) != EOF)) ? CODE_AFTER_MAIN : status;
+	err = status = ((status == SUCCES) && ((getc(file)) != EOF)) ? CODE_AFTER_MAIN : SUCCES;
+	if (status != SUCCES)
+	{
+		insertAfter(first);
+		errorPtr errPtr = malloc(sizeof(error));
+		errPtr->line = lines;
+		errPtr->status = err;
+		first->next->info = errPtr;
+		findNextPartOfCode(file, &c, &lines, &identation);
+		status = SUCCES;
+	}
+
 	errorCode = status;
 
 	fclose(file);
-	printf("%s", (char*)searchHash(errorsHashArray, errorCode, hashCode)->data);
+	showAllErrors(first->next, errorsHashArray);
+
 
 	freeGraph(&mainGraph);
 	freeGraph(&ifAndElseGraph);
@@ -114,4 +195,33 @@ void main()
 	freeGraph(&variablesNamesGraph);
 	freeGraph(&numbersGraph);
 	freeGraph(&conditionGraph);
+}
+
+void takeSource(FILE* file, char* source)
+{
+	if (file != NULL) {
+		/* Go to the end of the file. */
+		if (fseek(file, 0L, SEEK_END) == 0) {
+			/* Get the size of the file. */
+			long bufsize = ftell(file);
+			if (bufsize == -1) { /* Error */ }
+
+			/* Allocate our buffer to that size. */
+			source = malloc(sizeof(char) * (bufsize + 1));
+
+			/* Go back to the start of the file. */
+			if (fseek(file, 0L, SEEK_SET) != 0) { /* Error */ }
+
+			/* Read the entire file into memory. */
+			size_t newLen = fread(source, sizeof(char), bufsize, file);
+			if (ferror(file) != 0) {
+				fputs("Error reading file", stderr);
+			}
+			else {
+				source[++newLen] = '\0'; /* Just to be safe. */
+			}
+		}
+		//fclose(file);
+	}
+	fseek(file, 0, SEEK_SET);
 }

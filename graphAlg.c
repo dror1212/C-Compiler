@@ -13,8 +13,8 @@
 // Output  :  depends on the method
 //
 //----------------------------------------------------------------------------------------------
-// Programmer: Jonathan Roll
-// Student's ID number: 322999343 
+// Programmer: Dror Tal
+// Student's ID number: 322534793
 // Date : 2.1.2020
 //----------------------------------------------------------------------------------------------
 void initGraph(graphPtr g)
@@ -50,7 +50,7 @@ void addVertexToGraph(graphPtr g,vertexPtr vertex)
 int getOffsetByVertexName(graphPtr g, void* name, int(*cmp)(void*, void*))
 {
 	int i;
-	for (i = 0; i < g->size&&cmp(name, g->verticesArr[i]); i++);
+	for (i = 0; i < g->size && cmp(name, g->verticesArr[i]); i++);
 	return (i < g->size) ? i : -1;
 }
 
