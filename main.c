@@ -2,6 +2,7 @@
 
 void main()
 {
+	// Variable definition
 	FILE* file = fopen("code.txt", "r");
 	graph mainGraph;
 	graph createVarsGraph;
@@ -76,19 +77,12 @@ void main()
 	graphArray[0] = ifAndElseGraph;
 	hashArray[0] = ifAndElseStarts;
 
-	status = explore(&mainGraph, getc(file),
+	Status err = status = explore(&mainGraph, getc(file),
 					file, 15, graphsToUse,vars,&lines);
-	if (status != SUCCES)
-	{
-		insertAfter(first);
-		errorPtr errPtr = malloc(sizeof(error));
-		errPtr->line = lines;
-		errPtr->status = status;
-		first->next->info = errPtr;
-		findNextPartOfCode(file, &c, &lines, &identation);
-		status = SUCCES;
-	}
-	Status err = SYNTAX_ERROR;
+
+	checkError(&status, first, &lines, err, file, &c, &identation);
+
+	err = status == SUCCES ? SYNTAX_ERROR : status;
 
 	while (identation >= 0 && (c = getc(file)) != EOF)
 	{
@@ -122,7 +116,6 @@ void main()
 			place = ftell(file);
 			c == '}' ? c = getc(file) : fseek(file, -1L, SEEK_CUR);
 			place = ftell(file);
-			//fseek(file, -1L, SEEK_CUR);
 			status = explore(&equalsGraph, 0, file, -1, graphsToUse, vars, &lines);
 			if (ftell(file) - place > max && statusTemp != SUCCES)
 			{
@@ -131,57 +124,27 @@ void main()
 			}
 			status == SUCCES ? NULL : fseek(file, place, SEEK_SET);
 		}
-		if (status > SUCCES && max > 0 && identation != -1)
+		if (max > 0 && identation != -1)
 		{
-			insertAfter(first);
-			errorPtr errPtr = malloc(sizeof(error));
-			errPtr->line = lines;
-			errPtr->status = err;
-			first->next->info = errPtr;
-			findNextPartOfCode(file, &c, &lines, &identation);
-			status = SUCCES;
+			checkError(&status, first, &lines, err, file, &c, &identation);
 		}
 		status = SUCCES;
 	}
-	//identation -= (c / '}' == 1) && (c % '}' == 0);
 	status = err = ((status == SUCCES) && (identation != -1)) ? IDENTATION_ERROR : SUCCES;
-	if (status != SUCCES)
-	{
-		insertAfter(first);
-		errorPtr errPtr = malloc(sizeof(error));
-		errPtr->line = lines;
-		errPtr->status = err;
-		first->next->info = errPtr;
-		findNextPartOfCode(file, &c, &lines, &identation);
-		status = SUCCES;
-	}
+
+	checkError(&status, first, &lines, err, file, &c, &identation);
+
 	status = err = ((status == SUCCES) && ((getc(file)) != EOF)) ? CODE_AFTER_MAIN : SUCCES;
-	if (status != SUCCES)
-	{
-		insertAfter(first);
-		errorPtr errPtr = malloc(sizeof(error));
-		errPtr->line = lines;
-		errPtr->status = err;
-		first->next->info = errPtr;
-		findNextPartOfCode(file, &c, &lines, &identation);
-		status = SUCCES;
-	}
+
+	checkError(&status, first, &lines, err, file, &c, &identation);
 
 	c = getc(file);
 
 	strip(file, &c, &lines);
 
 	err = status = ((status == SUCCES) && ((getc(file)) != EOF)) ? CODE_AFTER_MAIN : SUCCES;
-	if (status != SUCCES)
-	{
-		insertAfter(first);
-		errorPtr errPtr = malloc(sizeof(error));
-		errPtr->line = lines;
-		errPtr->status = err;
-		first->next->info = errPtr;
-		findNextPartOfCode(file, &c, &lines, &identation);
-		status = SUCCES;
-	}
+	checkError(&status, first, &lines, err, file, &c, &identation);
+
 
 	errorCode = status;
 

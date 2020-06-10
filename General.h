@@ -41,4 +41,5 @@ void strip(FILE* file, char* c, int* line);
 void partStrip(FILE* file, char* c, int* line);
 void findNextPartOfCode(FILE* file, char* c, int* line, int* identation);
 void showAllErrors(LLLPtr list, HashTable errorsHashArray);
+void checkError(int* status, LLLPtr first, int* lines, int err, FILE* file, char* c, int* identation);
 #endif // !_GENERAL

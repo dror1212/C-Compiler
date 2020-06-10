@@ -2,27 +2,89 @@
 
 #include "General.h"
 
+//----------------------------------------------------------------------
+//                            cmpNameVrx
+//                          -------------
+//
+// General      : This function compares between two vertexes.
+//
+// Parameters   : 
+//			val1 - The first vertex
+//			val2 - The second vertex
+//
+// Return Value : Are they equals
+//
+//----------------------------------------------------------------------
 int cmpNameVrx(void* val1, void* val2)
 {
 	return (char)((vertexPtr)val1)->value - (char)((vertexPtr)val2)->value;
 }
 
+//----------------------------------------------------------------------
+//                            cmpCharVrx
+//                          -------------
+//
+// General      : This function compares between two vertexes.
+//
+// Parameters   : 
+//			val1 - The first vertex
+//			val2 - The second vertex
+//
+// Return Value : Are they equals
+//
+//----------------------------------------------------------------------
 int cmpCharVrx(void* val1, void* val2)
 {
 	return ((char)val1 - (char)((vertexPtr)val2)->value);
 }
 
+//----------------------------------------------------------------------
+//                            cmpStatus
+//                          -------------
+//
+// General      : This function compares between two vertexes.
+//
+// Parameters   : 
+//			val1 - The first vertex
+//			val2 - The second vertex
+//
+// Return Value : Are they equals
+//
+//----------------------------------------------------------------------
 int cmpStatus(void* val1, void* val2)
 {
 	return ((int)val1 - ((vertexPtr)val2)->status);
 }
 
-
+//----------------------------------------------------------------------
+//                            hashCode
+//                          ------------
+//
+// General      : This function do hash for simple values.
+//
+// Parameters   : 
+//			key - The value for the hash
+//
+// Return Value : The hash key.
+//
+//----------------------------------------------------------------------
 int hashCode(void* key)
 {
 	return (Status)key % HASH_TABLE_SIZE;
 }
 
+//----------------------------------------------------------------------
+//                            stringHashCode
+//                          ------------------
+//
+// General      : This function do hash for strings.
+//
+// Parameters   : 
+//			str - The string
+//
+// Return Value : The hash key.
+//
+//----------------------------------------------------------------------
 int stringHashCode(char* str)
 {
 	unsigned char hash = 5381;
@@ -34,6 +96,22 @@ int stringHashCode(char* str)
 	return hash % HASH_TABLE_SIZE;
 }
 
+//----------------------------------------------------------------------
+//                            initMyGraph
+//                          ----------------
+//
+// General      : Creates a graph.
+//
+// Parameters   : 
+//			graph - The graph
+//			statuses - The statuses 
+//			vertexes - The vertexex values
+//			graphs - Temp value
+//			err - The errors for this graph
+//
+// Return Value : void
+//
+//----------------------------------------------------------------------
 void initMyGraph(graphPtr graph, int* statuses, char* vertexes, char* graphs, Status err)
 {
 	vertexPtr vert;
@@ -95,34 +173,20 @@ void initMyGraph(graphPtr graph, int* statuses, char* vertexes, char* graphs, St
 	vert->value = NULL;
 	vert->status = err;
 	addVertexToGraph(graph, vert);
-
-
-	/*
-	// will be removed
-	for (int i = 0; i < graph->size - 1; i++)
-	{
-		for(char * ch = graphs; *ch != '\0';ch++)
-		{
-			graph->verticesArr[i]->value == *ch ? graph->verticesArr[i]->value = NULL : NULL;
-		}
-		graph->adjacentMat[i][graph->size - 1] = TRUE;
-	}
-
-
-
-	for (int i = 0; i < graph->size; i++)
-	{
-		printf("%c", graph->verticesArr[i]->value);
-		printf("%d\n", graph->verticesArr[i]->status);
-		for (int j = 0; j < graph->size; j++)
-		{
-			printf("%d", graph->adjacentMat[i][j]);
-		}
-		printf("\n");
-	}
-	*/
 }
 
+//----------------------------------------------------------------------
+//                            initMainGraph
+//                          ----------------
+//
+// General      : Creates the main graph.
+//
+// Parameters   : 
+//			graph - The graph
+//
+// Return Value : void
+//
+//----------------------------------------------------------------------
 void initMainGraph(graphPtr graph)
 {
 	Status statuses[12] = { SEARCHING,SEARCHING,SEARCHING,SEARCHING,SEARCHING,SEARCHING,
@@ -144,6 +208,18 @@ void initMainGraph(graphPtr graph)
 	initMyGraph(graph, statuses, "vooiidd    mmaaiinn(n  ((vd)){","", FIND_MAIN);
 }
 
+//----------------------------------------------------------------------
+//                            initifAndElseGraph
+//                          ----------------------
+//
+// General      : Creates the if and else graph.
+//
+// Parameters   : 
+//			graph - The graph
+//
+// Return Value : void
+//
+//----------------------------------------------------------------------
 void initifAndElseGraph(graphPtr graph)
 {
 	Status statuses[12] = { SEARCHING,SEARCHING,SEARCHING,SEARCHING,SEARCHING,SEARCHING,
@@ -166,6 +242,18 @@ void initifAndElseGraph(graphPtr graph)
 	initMyGraph(graph, statuses, "iff f( (ellssee  i(!!)e{){ {)   }e}  i e", "!", PROBLEM_OPERAND);
 }
 
+//----------------------------------------------------------------------
+//                            initConditionGraph
+//                          ----------------------
+//
+// General      : Creates the condition graph.
+//
+// Parameters   : 
+//			graph - The graph
+//
+// Return Value : void
+//
+//----------------------------------------------------------------------
 void initConditionGraph(graphPtr graph)
 {
 	Status statuses[17] = { SEARCHING };
@@ -238,6 +326,18 @@ void initConditionGraph(graphPtr graph)
 	initMyGraph(graph, statuses, "{)}){ }    ) + - * / % < > = | &<=>===&&||+{-{*{/{%{={|{&{+}-}*}/}%}=}|}&}(?{){+{-{*{/{%{<{>{={|{&})}+}-}*}/}%}<}>}=}|}&", "{}?", PROBLEM_OPERAND);
 }
 
+//----------------------------------------------------------------------
+//                            initNewVarNameGraph
+//                          ----------------------
+//
+// General      : Creates the new vars graph.
+//
+// Parameters   : 
+//			graph - The graph
+//
+// Return Value : void
+//
+//----------------------------------------------------------------------
 void initNewVarNameGraph(graphPtr graph)
 {
 	Status statuses[37] = { SEARCHING };
@@ -285,6 +385,18 @@ void initNewVarNameGraph(graphPtr graph)
 	initMyGraph(graph, statuses, vertexes,"", WRONG_PARAMETER_NAME);
 }
 
+//----------------------------------------------------------------------
+//                            initNumbersGraph
+//                          --------------------
+//
+// General      : Creates the numbers graph.
+//
+// Parameters   : 
+//			graph - The graph
+//
+// Return Value : void
+//
+//----------------------------------------------------------------------
 void initNumbersGraph(graphPtr graph)
 {
 	Status statuses[11] = { SEARCHING };
@@ -306,6 +418,18 @@ void initNumbersGraph(graphPtr graph)
 	initMyGraph(graph, statuses, vertexes, "", NOT_PART_OF_NUMBER);
 }
 
+//----------------------------------------------------------------------
+//                            initEqualsGraph
+//                          -------------------
+//
+// General      : Creates the equals graph.
+//
+// Parameters   : 
+//			graph - The graph
+//
+// Return Value : void
+//
+//----------------------------------------------------------------------
 void initEqualsGraph(graphPtr graph)
 {
 	Status statuses[6] = { SEARCHING,CHECK_VARIABLES_GRAPH,SEARCHING, SUCCES,NUMBERS_GRAPH, SYNTAX_ERROR};
@@ -314,7 +438,18 @@ void initEqualsGraph(graphPtr graph)
 	initMyGraph(graph, statuses, "   }}==}}; == =? ?? ?;} =}", "}?", PROBLEM_IN_PLACEMENT);
 }
 
-
+//----------------------------------------------------------------------
+//                        initCreateVariablesGraph
+//                          -------------------
+//
+// General      : Creates the create variables graph.
+//
+// Parameters   : 
+//			graph - The graph
+//
+// Return Value : void
+//
+//----------------------------------------------------------------------
 void initCreateVariablesGraph(graphPtr graph)
 {
 	Status statuses[18] = { SEARCHING };
@@ -324,6 +459,18 @@ void initCreateVariablesGraph(graphPtr graph)
 	initMyGraph(graph, statuses, "unnssiiggnneedd    iinnt ffllooaatt  sshhoorrt }};", "}", WRONG_PARAMETER_NAME);
 }
 
+//----------------------------------------------------------------------
+//							initErrorsHashTable
+//                          -------------------
+//
+// General      : Creates the errors hash table.
+//
+// Parameters   : 
+//			hashArray - The hash table
+//
+// Return Value : void
+//
+//----------------------------------------------------------------------
 void initErrorsHashTable(HashTable hashArray)
 {
 	insertHash(hashArray, IDENTATION_ERROR, "There was an error in the identation", hashCode);
@@ -336,6 +483,21 @@ void initErrorsHashTable(HashTable hashArray)
 	insertHash(hashArray, PROBLEM_IN_PLACEMENT, "There was an error while trying to place a new value to var", hashCode);
 }
 
+//----------------------------------------------------------------------
+//							initGraphsToUse
+//                          ----------------
+//
+// General      : Add value to the graphs to use hash table.
+//
+// Parameters   : 
+//			hashArray - The hash table
+//			newGraph - The graph to add
+//			newTable - the graph's hash table
+//			graphName - The value that represents the graph
+//
+// Return Value : void
+//
+//----------------------------------------------------------------------
 void initGraphsToUse(HashTable hashArray, graphPtr newGraph,HashTable newTable, int graphName)
 {
 	mapPtr map = (mapPtr)malloc(sizeof(map));
@@ -344,6 +506,18 @@ void initGraphsToUse(HashTable hashArray, graphPtr newGraph,HashTable newTable, 
 	insertHash(hashArray, graphName, map, hashCode);
 }
 
+//----------------------------------------------------------------------
+//							initStartsCreatingVars
+//                          ----------------------
+//
+// General      : Creates the creating vars hash table.
+//
+// Parameters   : 
+//			hashArray - The hash table
+//
+// Return Value : void
+//
+//----------------------------------------------------------------------
 void initStartsCreatingVars(HashTable hashArray)
 {
 	insertHash(hashArray, 'i', 3, hashCode);
@@ -352,12 +526,35 @@ void initStartsCreatingVars(HashTable hashArray)
 	insertHash(hashArray, 'u', 0, hashCode);
 }
 
+//----------------------------------------------------------------------
+//							initStartsCondition
+//                          --------------------
+//
+// General      : Creates the condition hash table.
+//
+// Parameters   : 
+//			hashArray - The hash table
+//
+// Return Value : void
+//
+//----------------------------------------------------------------------
 void initStartsCondition(HashTable hashArray)
 {
 	insertHash(hashArray, '(', 3, hashCode);
 }
 
-
+//----------------------------------------------------------------------
+//							initNumbersHash
+//                          ----------------
+//
+// General      : Creates the numbers hash table.
+//
+// Parameters   : 
+//			hashArray - The hash table
+//
+// Return Value : void
+//
+//----------------------------------------------------------------------
 void initNumbersHash(HashTable hashArray)
 {
 	insertHash(hashArray, '0', '0', hashCode);
@@ -372,12 +569,36 @@ void initNumbersHash(HashTable hashArray)
 	insertHash(hashArray, '9', '9', hashCode);
 }
 
+//----------------------------------------------------------------------
+//							initStartsIfAndElse
+//                          -------------------
+//
+// General      : Creates the if and else hash table.
+//
+// Parameters   : 
+//			hashArray - The hash table
+//
+// Return Value : void
+//
+//----------------------------------------------------------------------
 void initStartsIfAndElse(HashTable hashArray)
 {
 	insertHash(hashArray, 'i', 0, hashCode);
 	insertHash(hashArray, '}', 10, hashCode);
 }
 
+//----------------------------------------------------------------------
+//							initNewVarNameHashTable
+//                          -----------------------
+//
+// General      : Creates the new var names hash table.
+//
+// Parameters   : 
+//			hashArray - The hash table
+//
+// Return Value : void
+//
+//----------------------------------------------------------------------
 void initNewVarNameHashTable(HashTable hashArray)
 {
 	STRING starts = "abcdefghijknlmopqrstuvwxyz";
@@ -388,6 +609,17 @@ void initNewVarNameHashTable(HashTable hashArray)
 	}
 }
 
+//----------------------------------------------------------------------
+//							variableGraphFunction
+//                          ----------------------
+//
+// General      : Exploring the var names graph.
+//
+// Parameters   : 
+//
+// Return Value : status
+//
+//----------------------------------------------------------------------
 Status variableGraphFunction(graphPtr gra, int *vertexIndex, FILE* source, HashTable graphsToUse, HashTable variables, Status status, char * newVar, char c, int * line)
 {
 	strip(source, &c, line);
@@ -416,6 +648,17 @@ Status variableGraphFunction(graphPtr gra, int *vertexIndex, FILE* source, HashT
 	return status;
 }
 
+//----------------------------------------------------------------------
+//							numbersGraphFunction
+//                          ----------------------
+//
+// General      : Exploring the numbers graph.
+//
+// Parameters   : 
+//
+// Return Value : status
+//
+//----------------------------------------------------------------------
 Status numbersGraphFunction(graphPtr gra, int* vertexIndex, FILE* source, HashTable graphsToUse, HashTable variables, Status status, char* newVar, char c, int * line)
 {
 	strip(source, &c,line);
@@ -438,6 +681,18 @@ Status numbersGraphFunction(graphPtr gra, int* vertexIndex, FILE* source, HashTa
 	return status;
 }
 
+
+//----------------------------------------------------------------------
+//						  checkVariablesGraphFunction
+//                          ----------------------
+//
+// General      : Exploring the check variables graph.
+//
+// Parameters   : 
+//
+// Return Value : status
+//
+//----------------------------------------------------------------------
 Status checkVariablesGraphFunction(graphPtr gra, int *vertexIndex, FILE* source, HashTable graphsToUse, HashTable variables, Status status, char* newVar, char c, int * line)
 {
 	strip(source, &c, line);
@@ -460,10 +715,8 @@ Status checkVariablesGraphFunction(graphPtr gra, int *vertexIndex, FILE* source,
 			{
 				index = getOffsetByVertexName(data->graph, searchHash(data->hashArray, c, hashCode)->data, cmpCharVrx);
 				status = exploreAndCreateVars(data->graph, index, source, newVar);
-				if (!searchHash(variables, newVar, stringHashCode))
-				{
-					status = WRONG_PARAMETER_NAME;
-				}
+
+				status = !searchHash(variables, newVar, stringHashCode) ? WRONG_PARAMETER_NAME : status;
 			}
 			else
 			{
@@ -482,6 +735,17 @@ Status checkVariablesGraphFunction(graphPtr gra, int *vertexIndex, FILE* source,
 	return status;
 }
 
+//----------------------------------------------------------------------
+//							conditionGraphFunction
+//                          ----------------------
+//
+// General      : Exploring the condition graph.
+//
+// Parameters   : 
+//
+// Return Value : status
+//
+//----------------------------------------------------------------------
 Status conditionGraphFunction(graphPtr gra, int * vertexIndex, FILE* source, HashTable graphsToUse, HashTable variables, Status status, char* newVar, char c, int * line)
 {
 	strip(source, &c, line);
@@ -501,7 +765,17 @@ Status conditionGraphFunction(graphPtr gra, int * vertexIndex, FILE* source, Has
 	return status;
 }
 
-
+//----------------------------------------------------------------------
+//								explore
+//							   ---------
+//
+// General      : Exploring the graphs to find the code meanings.
+//
+// Parameters   : 
+//
+// Return Value : status
+//
+//----------------------------------------------------------------------
 Status explore(graphPtr gra, int vertexIndex, FILE* source, int expectedLength, HashTable graphsToUse, HashTable variables, int * line)
 {
 	Status status = SEARCHING;
@@ -545,6 +819,17 @@ Status explore(graphPtr gra, int vertexIndex, FILE* source, int expectedLength, 
 	return status;
 }
 
+//----------------------------------------------------------------------
+//								exploreAndCreateVars
+//							   ----------------------
+//
+// General      : Exploring the graphs to find the code meanings to create var.
+//
+// Parameters   : 
+//
+// Return Value : status
+//
+//----------------------------------------------------------------------
 Status exploreAndCreateVars(graphPtr gra, int vertexIndex, FILE* source, char * newVar)
 {
 	Status status = SEARCHING;
@@ -580,6 +865,17 @@ void partStrip(FILE* file, char* c, int * line)
 	}
 }
 
+//----------------------------------------------------------------------
+//								findNextPartOfCode
+//							   --------------------
+//
+// General      : Find the next part of code after an error
+//
+// Parameters   : 
+//
+// Return Value : status
+//
+//----------------------------------------------------------------------
 void findNextPartOfCode(FILE* file, char* c, int* line, int * identation)
 {
 	while (*c != ';')
@@ -594,6 +890,17 @@ void findNextPartOfCode(FILE* file, char* c, int* line, int * identation)
 	}
 }
 
+//----------------------------------------------------------------------
+//								showAllErrors
+//							   ---------------
+//
+// General      : Show all the errors from the list
+//
+// Parameters   : 
+//
+// Return Value : status
+//
+//----------------------------------------------------------------------
 void showAllErrors(LLLPtr list, HashTable errorsHashArray)
 {
 	if (list != NULL)
@@ -607,5 +914,19 @@ void showAllErrors(LLLPtr list, HashTable errorsHashArray)
 	else
 	{
 		printf("\n%s", (char*)searchHash(errorsHashArray, SUCCES, hashCode)->data);
+	}
+}
+
+void checkError(int* status, LLLPtr first, int* lines, int err, FILE* file, char* c, int* identation)
+{
+	if (*status > SUCCES)
+	{
+		insertAfter(first);
+		errorPtr errPtr = malloc(sizeof(error));
+		errPtr->line = *lines;
+		errPtr->status = err;
+		first->next->info = errPtr;
+		findNextPartOfCode(file, c, lines, identation);
+		*status = SUCCES;
 	}
 }
