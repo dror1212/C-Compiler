@@ -1,0 +1,13 @@
+void main(void)
+{
+	int aaa;
+	unsigned short bb2a;
+	float bb3a;
+	if(aaa >= 55   && bb4a) {
+	} else if(aaa + 444) {
+		aaa = bb2a;
+	}
+	else{
+}
+	aaa = bb2a;
+}
